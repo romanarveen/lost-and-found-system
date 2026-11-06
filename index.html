@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#234b3b">
+<title>Campus Lost & Found</title>
+<style>
+:root{--green:#234b3b;--mint:#e9f2ec;--ink:#1d2923;--muted:#66736b;--line:#dce5de;--paper:#fff;--bg:#f5f7f5;--gold:#f4c96b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:var(--green);color:white;padding:22px 18px 26px}header .wrap,main{max-width:980px;margin:auto}
+.brand{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;font-weight:700}
+h1{font-size:28px;line-height:1.15;margin:8px 0}header p{margin:8px 0 0;color:#e2eee6}
+main{padding:18px 14px 48px}.notice{background:#fff7e4;border:1px solid #f0d99a;border-radius:12px;padding:12px 14px;color:#6a5017;font-size:13px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat,.panel,.item{background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.stat{padding:13px}.stat b{font-size:23px;display:block;color:var(--green)}.stat span{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
+button,.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:700;font-size:14px;cursor:pointer}
+.primary{background:var(--green);color:white}.secondary{background:var(--mint);color:var(--green)}
+.panel{padding:15px;margin:14px 0}.controls{display:grid;grid-template-columns:1fr 180px;gap:9px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;font:inherit;background:white;color:var(--ink)}
+.tabs{display:flex;gap:7px;overflow:auto;margin:14px 0}.tab{background:#e9eeea;color:var(--muted);white-space:nowrap}.tab.active{background:var(--green);color:white}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.item{padding:14px}.item h3{margin:8px 0 4px;font-size:17px}.meta{color:var(--muted);font-size:13px}.desc{margin:9px 0;font-size:14px}
+.pill{display:inline-block;border-radius:30px;padding:4px 9px;background:var(--mint);color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase}
+.pill.found{background:#e7f0ff;color:#28518a}.pill.returned{background:#e8f4e8;color:#276237}
+.match{background:#fff7e4;border-radius:8px;padding:8px;font-size:12px;margin-top:9px}
+form{display:grid;gap:10px}label{font-size:13px;font-weight:700;color:#435047}label input,label select,label textarea{margin-top:4px}
+.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:30px 10px}.small{font-size:12px;color:var(--muted)}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.stats{gap:7px}.stat{padding:10px}.stat b{font-size:20px}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="brand">Campus community tool</div><h1>Lost & Found</h1>
+<p>Report missing belongings, post found items, and check possible matches.</p>
+</div></header>
+<main>
+<div class="notice"><b>Prototype notice:</b> Reports are saved only in this browser on this device. This is a demonstration, not a shared school database. Do not enter sensitive personal information.</div>
+<div class="stats">
+<div class="stat"><b id="total">9</b><span>Total reports</span></div>
+<div class="stat"><b id="lostCount">5</b><span>Lost items</span></div>
+<div class="stat"><b id="foundCount">4</b><span>Found items</span></div>
+</div>
+<div class="actions">
+<button class="primary" onclick="showForm('Lost')">＋ Report Lost Item</button>
+<button class="secondary" onclick="showForm('Found')">＋ Report Found Item</button>
+<button class="secondary" onclick="showMine()">My Reports</button>
+</div>
+<section id="formPanel" class="panel hidden">
+<h2 id="formTitle">Report an item</h2>
+<form id="reportForm">
+<input type="hidden" id="kind">
+<label>Item name<input id="name" required maxlength="60" placeholder="e.g. Blue water bottle"></label>
+<label>Category<select id="category" required><option value="">Choose category</option><option>School supplies</option><option>Electronics</option><option>Personal belongings</option><option>Clothing</option><option>Accessories</option><option>Documents</option><option>Keys</option><option>Other</option></select></label>
+<label>Color (optional)<input id="color" maxlength="30" placeholder="e.g. blue"></label>
+<label>Location<input id="location" required maxlength="80" placeholder="Where was it lost or found?"></label>
+<label>Date<input id="date" type="date" required></label>
+<label>Description<textarea id="description" required rows="3" maxlength="400" placeholder="Add details that can help identify the item."></textarea></label>
+<label>Your name or nickname<input id="reporter" required maxlength="50" placeholder="Avoid sharing your student number"></label>
+<div class="actions"><button class="primary" type="submit">Submit report</button><button class="secondary" type="button" onclick="hideForm()">Cancel</button></div>
+</form>
+</section>
+<section class="panel">
+<div class="controls"><input id="search" placeholder="Search item, color, or location..." oninput="render()">
+<select id="categoryFilter" onchange="render()"><option value="">All categories</option><option>School supplies</option><option>Electronics</option><option>Personal belongings</option><option>Clothing</option><option>Accessories</option><option>Documents</option><option>Keys</option><option>Other</option></select></div>
+<div class="tabs">
+<button class="tab active" data-filter="All" onclick="setFilter('All',this)">All</button>
+<button class="tab" data-filter="Lost" onclick="setFilter('Lost',this)">Lost</button>
+<button class="tab" data-filter="Found" onclick="setFilter('Found',this)">Found</button>
+<button class="tab" data-filter="Returned" onclick="setFilter('Returned',this)">Returned</button>
+</div>
+<div id="items" class="grid"></div>
+</section>
+<section id="minePanel" class="panel hidden"><h2>My Reports</h2><div id="mine"></div></section>
+<p class="small">For a real school deployment, the system needs authenticated accounts, administrator verification, a shared backend, and a database.</p>
+</main>
+<footer>Campus Lost & Found · Student project prototype</footer>
+<script>
+const starter=[
+{id:1,kind:"Lost",name:"Wireless Earbuds",category:"Electronics",color:"White",location:"Library",date:"2026-11-04",description:"Small white earbuds in a charging case.",reporter:"Alex",status:"Open"},
+{id:2,kind:"Found",name:"Blue Water Bottle",category:"Personal belongings",color:"Blue",location:"Classroom 203",date:"2026-11-05",description:"Reusable bottle left near the back row.",reporter:"Jamie",status:"Open"},
+{id:3,kind:"Lost",name:"Black Wallet",category:"Personal belongings",color:"Black",location:"Cafeteria",date:"2026-11-03",description:"Small black wallet. Please message the reporter.",reporter:"Sam",status:"Open"},
+{id:4,kind:"Found",name:"Pink Calculator",category:"School supplies",color:"Pink",location:"Computer Laboratory",date:"2026-11-05",description:"Scientific calculator found on a desk.",reporter:"Taylor",status:"Open"},
+{id:5,kind:"Lost",name:"Silver Door Key",category:"Keys",color:"Silver",location:"School Hallway",date:"2026-11-02",description:"Single silver key with a plain ring.",reporter:"Jordan",status:"Open"},
+{id:6,kind:"Found",name:"USB Flash Drive",category:"Electronics",color:"Black",location:"Computer Laboratory",date:"2026-11-05",description:"Black USB drive found beside a computer.",reporter:"Casey",status:"Open"},
+{id:7,kind:"Lost",name:"Gray Hoodie",category:"Clothing",color:"Gray",location:"Gymnasium",date:"2026-11-01",description:"Gray hooded sweatshirt, medium size.",reporter:"Riley",status:"Open"},
+{id:8,kind:"Found",name:"Student ID Lace",category:"Accessories",color:"Blue",location:"School Canteen",date:"2026-11-06",description:"Blue ID lace. No ID details shown.",reporter:"Avery",status:"Open"},
+{id:9,kind:"Lost",name:"Black Umbrella",category:"Personal belongings",color:"Black",location:"Main Entrance",date:"2026-11-06",description:"Foldable umbrella with a curved handle.",reporter:"Morgan",status:"Open"}
+];
+let reports;try{reports=JSON.parse(localStorage.getItem("campusLostFound")||"null")||starter}catch(e){reports=starter}
+let activeFilter="All", mineMode=false;
+function save(){try{localStorage.setItem("campusLostFound",JSON.stringify(reports))}catch(e){alert("Could not save in this browser.")}}
+function stats(){document.getElementById("total").textContent=reports.length;document.getElementById("lostCount").textContent=reports.filter(x=>x.kind==="Lost"&&x.status!=="Returned").length;document.getElementById("foundCount").textContent=reports.filter(x=>x.kind==="Found"&&x.status!=="Returned").length}
+function setFilter(f,el){activeFilter=f;mineMode=false;document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));el.classList.add("active");render()}
+function showForm(k){document.getElementById("kind").value=k;document.getElementById("formTitle").textContent="Report "+k+" Item";document.getElementById("formPanel").classList.remove("hidden");document.getElementById("minePanel").classList.add("hidden");document.getElementById("date").value=new Date().toISOString().slice(0,10);document.getElementById("formPanel").scrollIntoView({behavior:"smooth"})}
+function hideForm(){document.getElementById("formPanel").classList.add("hidden")}
+function showMine(){mineMode=true;document.getElementById("minePanel").classList.remove("hidden");document.getElementById("formPanel").classList.add("hidden");document.getElementById("minePanel").scrollIntoView({behavior:"smooth"});document.getElementById("mine").innerHTML="<p class='small'>This demo lists reports created on this device. It does not verify identity.</p>"+reports.filter(x=>x.local).map(card).join("")||"<p>No reports submitted on this device yet.</p>"}
+function card(x){let opposite=reports.filter(y=>y.kind!==x.kind&&y.status!=="Returned"&&(y.category===x.category||y.name.toLowerCase().includes(x.name.toLowerCase().split(" ")[0])));let match=opposite.length?`<div class="match">Possible related report: ${esc(opposite[0].name)} · ${esc(opposite[0].location)}. Please verify the item with an administrator.</div>`:"";return `<article class="item"><span class="pill ${x.kind.toLowerCase()}">${esc(x.kind)}</span> <span class="pill ${x.status==="Returned"?"returned":""}">${esc(x.status)}</span><h3>${esc(x.name)}</h3><div class="meta">${esc(x.category)}${x.color?" · "+esc(x.color):""}</div><p class="desc">${esc(x.description)}</p><div class="meta">📍 ${esc(x.location)} · ${esc(x.date)}</div><div class="meta">Reported by ${esc(x.reporter)}</div>${match}${x.local&&x.status!=="Returned"?`<button class="secondary" style="margin-top:10px" onclick="markReturned(${x.id})">Mark returned (demo)</button>`:""}</article>`}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){stats();let q=document.getElementById("search").value.toLowerCase(),cat=document.getElementById("categoryFilter").value;let list=reports.filter(x=>(activeFilter==="All"||x.kind===activeFilter||x.status===activeFilter)&&(!cat||x.category===cat)&&[x.name,x.color,x.location,x.description,x.category].join(" ").toLowerCase().includes(q));document.getElementById("items").innerHTML=list.length?list.map(card).join(""):"<div class='empty'>No matching reports found.</div>"}
+function markReturned(id){let x=reports.find(a=>a.id===id);if(x){x.status="Returned";save();render();showMine()}}
+document.getElementById("reportForm").addEventListener("submit",e=>{e.preventDefault();let x={id:Date.now(),kind:document.getElementById("kind").value,name:document.getElementById("name").value.trim(),category:document.getElementById("category").value,color:document.getElementById("color").value.trim(),location:document.getElementById("location").value.trim(),date:document.getElementById("date").value,description:document.getElementById("description").value.trim(),reporter:document.getElementById("reporter").value.trim(),status:"Open",local:true};reports.unshift(x);save();e.target.reset();hideForm();render();alert("Report added to this device's browser only.")});
+render();
+</script>
+</body></html>
